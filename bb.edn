@@ -19,9 +19,12 @@
   ;; Tasks
   ;;;;
 
+  project:manifest     {:task (prn manifest)}
   project:build-at     {:task (prn (project/build-at))}
   project:build-number {:task (prn (project/build-number))}
   project:git-url      {:task (prn (project/git-url manifest))}
   project:git-branch   {:task (prn (project/git-branch))}
   project:git-sha      {:task (prn (project/git-sha))}
-  project:variables    {:task (prn (project/variables manifest))}}}
+  project:variables    {:task (prn (project/variables manifest))}
+  project:version      {:task (prn (project/version manifest))}
+  project:metadata     {:task (prn (project/metadata manifest))}}}

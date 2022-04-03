@@ -1,5 +1,5 @@
 {:project      io.lazy-cat/tools.project
- :version      {:template "0.0.{{ :build-number }}"}
+ :version      {:template "0.0.{{ build-number }}"}
  :description  "A project management tool."
  :license      "MIT"
  :author       "Ilshat Sultanov <ilshat@sultanov.team>"
