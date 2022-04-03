@@ -53,17 +53,16 @@
   (git/sha))
 
 
-(defn metadata
+(defn variables
   ([]
-   (metadata {}))
+   (variables {}))
   ([manifest]
-   (let [now       (datetime/zoned-date-time)
-         variables {:build-at     (build-at)
-                    :build-number (build-number)
-                    :git-url      (git-url manifest)
-                    :git-branch   (git-branch)
-                    :git-sha      (git-sha)
-                    :year         (datetime/format now (formatter/of-pattern "YYYY"))
-                    :month        (datetime/format now (formatter/of-pattern "MM"))
-                    :day          (datetime/format now (formatter/of-pattern "dd"))}]
-     (assoc manifest :variables variables))))
+   (let [now (datetime/zoned-date-time)]
+     {:build-at     (build-at)
+      :build-number (build-number)
+      :git-url      (git-url manifest)
+      :git-branch   (git-branch)
+      :git-sha      (git-sha)
+      :year         (datetime/format now (formatter/of-pattern "YYYY"))
+      :month        (datetime/format now (formatter/of-pattern "MM"))
+      :day          (datetime/format now (formatter/of-pattern "dd"))})))

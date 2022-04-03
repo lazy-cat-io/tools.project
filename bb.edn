@@ -5,30 +5,23 @@
  {io.lazy-cat/tools.project {:local/root "."}}
 
  :tasks
- {:requires    ([babashka.fs :as fs]
-                [babashka.process :as process]
-                [clojure.string :as str]
-                [tools.datetime :as datetime]
-                [tools.git :as git]
-                [tools.path :as path])
+ {:requires            ([tools.project :as project])
 
-  :init        (do
-                 )
+  :init                (do
+                         (def manifest (project/read-manifest)))
 
-  :enter       (let [{:keys [doc print-doc?]
-                      :or   {print-doc? true}} (current-task)]
-                 (when (and print-doc? doc)
-                   (println (str "▸ " doc))))
+  :enter               (let [{:keys [doc print-doc?]
+                              :or   {print-doc? true}} (current-task)]
+                         (when (and print-doc? doc)
+                           (println (str "▸ " doc))))
 
   ;;;;
   ;; Tasks
   ;;;;
 
-  now          {:task (print (datetime/format (datetime/zoned-date-time)))}
-
-  build-number {:task (print (git/commits-count))}
-  git-url      {:task (print (git/url))}
-  git-branch   {:task (print (git/branch))}
-  git-sha      {:task (print (git/sha))}
-
-  user-dir     {:task (print (path/user-dir))}}}
+  project:build-at     {:task (prn (project/build-at))}
+  project:build-number {:task (prn (project/build-number))}
+  project:git-url      {:task (prn (project/git-url manifest))}
+  project:git-branch   {:task (prn (project/git-branch))}
+  project:git-sha      {:task (prn (project/git-sha))}
+  project:variables    {:task (prn (project/variables manifest))}}}
