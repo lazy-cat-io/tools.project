@@ -7,9 +7,10 @@
   ([]
    (commits-count "HEAD"))
   ([branch]
-   (->> branch
-        (format "git rev-list %s --count")
-        (process/execute))))
+   (or (->> branch
+            (format "git rev-list %s --count")
+            (process/execute))
+       "0")))
 
 
 (defn url
@@ -23,9 +24,5 @@
 
 
 (defn sha
-  ([]
-   (sha :short))
-  ([type]
-   (case type
-     :short (process/execute "git rev-parse --short HEAD")
-     (process/execute "git rev-parse HEAD"))))
+  []
+  (process/execute "git rev-parse HEAD"))
