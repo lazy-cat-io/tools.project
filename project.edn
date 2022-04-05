@@ -1,5 +1,5 @@
-{:project      io.lazy-cat/tools.project
- :version      {:template "0.0.{{ build-number }}"}
+{:name         io.lazy-cat/tools.project
+ :version      "0.0.{{ git/commits-count }}"
  :description  "A project management tool."
  :license      "MIT"
  :author       "Ilshat Sultanov <ilshat@sultanov.team>"
@@ -9,4 +9,4 @@
  :homepage     "https://github.com/lazy-cat-io/tools.project#readme"
  :repository   {:url "https://github.com/lazy-cat-io/tools.project.git"}
  :bugs         {:url "https://github.com/lazy-cat-io/tools.project/issues"}
- :keywords     [:clojure :tools.project :project-management]}
+ :keywords     [:clojure :project-management :project-management-tool]}
