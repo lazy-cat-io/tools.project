@@ -135,7 +135,7 @@
   (let [path (if (= group-id artifact-id)
                [(path/symbol->path artifact-id)]
                (keep path/symbol->path [group-id artifact-id]))]
-    (->> ["target" "versioniq" "META-INF" path "build.edn"]
+    (->> ["target" "tools.project" "META-INF" path "build.edn"]
          (flatten)
          (str/join path/file-separator))))
 
