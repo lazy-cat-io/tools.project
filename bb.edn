@@ -5,26 +5,26 @@
  {io.lazy-cat/tools.project {:local/root "."}}
 
  :tasks
- {:requires            ([tools.project :as project])
+ {:requires    ([tools.project :as p]
+                [tools.print :as pp])
 
-  :init                (do
-                         (def manifest (project/read-manifest)))
+  :init        (do
+                 (def project (p/read-project)))
 
-  :enter               (let [{:keys [doc print-doc?]
-                              :or   {print-doc? true}} (current-task)]
-                         (when (and print-doc? doc)
-                           (println (str "▸ " doc))))
+  :enter       (let [{:keys [doc print-doc?]
+                      :or   {print-doc? true}} (current-task)]
+                 (when (and print-doc? doc)
+                   (println (str "▸ " doc))))
 
   ;;;;
   ;; Tasks
   ;;;;
 
-  project:manifest     {:task (prn manifest)}
-  project:build-at     {:task (prn (project/build-at))}
-  project:build-number {:task (prn (project/build-number))}
-  project:git-url      {:task (prn (project/git-url manifest))}
-  project:git-branch   {:task (prn (project/git-branch))}
-  project:git-sha      {:task (prn (project/git-sha))}
-  project:variables    {:task (prn (project/variables manifest))}
-  project:version      {:task (prn (project/version manifest))}
-  project:metadata     {:task (prn (project/metadata manifest))}}}
+  project:info {:task (pp/pretty project {:right-margin 200})}
+
+  lint         {:doc  "Run linters"
+                :task (do
+                        (shell "cljstyle check src")
+                        (shell "clj-kondo --lint src"))}
+  lint:fix     {:doc  "Run linters & fix"
+                :task (shell "cljstyle fix src")}}}
