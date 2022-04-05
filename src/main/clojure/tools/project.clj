@@ -78,31 +78,15 @@
       (with-config-defaults)))
 
 
-(def export-keys
-  [:build/created-at
-   :build/number
-   :git/url
-   :git/branch
-   :git/sha
-   :git/commit-message
-   :git/committer-timestamp
-   :git/committer-name
-   :git/committer-email
-   :git/author-timestamp
-   :git/author-name
-   :git/author-email
-   :git/commits-count])
-
-
 (defn with-project-defaults
   [config project]
   (let [project-name (:name project)
-        extra-data   (-> config (:variables) (select-keys export-keys))
         git-tag      (:version project)
-        build        (cond-> {}
+        export-keys  (get-in config [:build :export-keys] [])
+        build        (cond-> (:variables config)
                        (qualified-symbol? project-name) (assoc :mvn/group-id (-> project-name (namespace) (symbol)))
                        (symbol? project-name) (assoc :mvn/artifact-id (-> project-name (name) symbol))
-                       :always (-> (assoc :git/tag git-tag) (merge extra-data)))]
+                       :always (-> (assoc :git/tag git-tag) (select-keys export-keys)))]
     (assoc project :build build)))
 
 

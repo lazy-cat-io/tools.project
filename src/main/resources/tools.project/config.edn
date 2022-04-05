@@ -16,4 +16,15 @@
   :git/author-email        "git log -1 --no-merges --pretty=format:%ae"
 
   :git/commits-count       ["git rev-list HEAD --count" :default "0"]
-  :git/tags                "git tag --list --sort=-version:refname \"*\""}}
+  :git/tags                "git tag --list --sort=-version:refname \"*\""}
+
+ :build
+ {:export-keys [:build/created-at :build/number
+                :git/author-email :git/author-name :git/author-timestamp
+                :git/branch
+                :git/commit-message :git/commits-count
+                :git/committer-email :git/committer-name :git/committer-timestamp
+                :git/sha
+                :git/tag :git/tags
+                :git/url
+                :mvn/group-id :mvn/artifact-id]}}
