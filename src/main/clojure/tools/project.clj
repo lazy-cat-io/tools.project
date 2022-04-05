@@ -2,129 +2,155 @@
   (:require
     [clojure.edn :as edn]
     [clojure.java.io :as io]
+    [clojure.string :as str]
+    [clojure.tools.build.util.file :as file]
+    [clojure.walk :as walk]
     [selmer.parser :as selmer]
     [tools.datetime :as datetime]
     [tools.datetime.formatter :as formatter]
-    [tools.git :as git]
-    [tools.path :as path])
+    [tools.path :as path]
+    [tools.print :as print]
+    [tools.process :as process])
   (:import
-    (clojure.lang
-      PersistentArrayMap
-      PersistentHashMap)))
+    (java.io
+      File)))
 
 
-(def filename "project.edn")
-
-
-(defn root
+(defn root-directory
   []
   (path/user-dir))
 
 
-(defn read-manifest
+(defn read-edn
+  [^File file]
+  (when (and file (.exists file))
+    (-> file slurp edn/read-string)))
+
+
+(defn read-default-config
+  []
+  (some->> (io/resource "tools.project/config.edn")
+           (io/file)
+           (read-edn)))
+
+
+(defn read-user-config
+  []
+  (some->> (or (io/file (root-directory) ".tp" "config.edn")
+               (io/file (root-directory) ".tools.project" "config.edn"))
+           (read-edn)))
+
+
+(defn with-config-defaults
+  [config]
+  (let [now (datetime/zoned-date-time)]
+    (update config :variables assoc
+            :build/created-at (datetime/format now)
+            :datetime/year (datetime/format now (formatter/of-pattern "YYYY"))
+            :datetime/month (datetime/format now (formatter/of-pattern "MM"))
+            :datetime/day (datetime/format now (formatter/of-pattern "dd"))
+            :datetime/hour (datetime/format now (formatter/of-pattern "HH"))
+            :datetime/minute (datetime/format now (formatter/of-pattern "mm"))
+            :datetime/second (datetime/format now (formatter/of-pattern "SS")))))
+
+
+(defn build-config
+  [config]
+  (update config :variables
+          (fn [variables]
+            (reduce-kv
+              (fn [acc variable command]
+                (let [value (cond
+                              (string? command) (process/execute command)
+                              (vector? command) (let [[command & {:keys [default]}] command]
+                                                  (or (process/execute command) default)))]
+                  (assoc acc variable value)))
+              {} variables))))
+
+
+(defn read-config
+  []
+  (-> (merge-with
+        merge
+        (read-default-config)
+        (read-user-config))
+      (build-config)
+      (with-config-defaults)))
+
+
+(def export-keys
+  [:build/created-at
+   :build/number
+   :git/url
+   :git/branch
+   :git/sha
+   :git/commit-message
+   :git/committer-timestamp
+   :git/committer-name
+   :git/committer-email
+   :git/author-timestamp
+   :git/author-name
+   :git/author-email
+   :git/commits-count])
+
+
+(defn with-project-defaults
+  [config project]
+  (let [project-name (:name project)
+        extra-data   (-> config (:variables) (select-keys export-keys))
+        git-tag      (:version project)
+        build        (cond-> {}
+                       (qualified-symbol? project-name) (assoc :mvn/group-id (-> project-name (namespace) (symbol)))
+                       (symbol? project-name) (assoc :mvn/artifact-id (-> project-name (name) symbol))
+                       :always (-> (assoc :git/tag git-tag) (merge extra-data)))]
+    (assoc project :build build)))
+
+
+(defn build-project
+  [config project]
+  (walk/postwalk
+    (fn [form]
+      (if-not (string? form)
+        form
+        (selmer/render form (:variables config))))
+    project))
+
+
+(defn read-project
   ([]
-   (read-manifest (io/file (root) filename)))
+   (read-project (io/file (root-directory) "project.edn")))
   ([path]
-   (when-some [file (io/file path)]
-     (when (.exists file)
-       (-> file slurp edn/read-string)))))
-
-
-(defn build-at
-  []
-  (datetime/format (datetime/zoned-date-time)))
-
-
-(defn build-number
-  ([]
-   (git/commits-count "HEAD"))
-  ([branch]
-   (git/commits-count branch)))
-
-
-(defn git-url
-  [manifest]
-  (or (get-in manifest [:repository :url])
-      (git/url)))
-
-
-(defn git-branch
-  []
-  (git/branch))
-
-
-(defn git-sha
-  []
-  (git/sha))
-
-
-;; TODO: [2022-04-04, ilshat@sultanov.team] Add :major, :minor, :patch variables from git tags
-;; $ git tag --list --sort=-version:refname *
-
-(defn variables
-  ([]
-   (variables {}))
-  ([manifest]
-   (let [now (datetime/zoned-date-time)]
-     {:build-at     (build-at)
-      :build-number (build-number)
-      :git-url      (git-url manifest)
-      :git-branch   (git-branch)
-      :git-sha      (git-sha)
-      :year         (datetime/format now (formatter/of-pattern "YYYY"))
-      :month        (datetime/format now (formatter/of-pattern "MM"))
-      :day          (datetime/format now (formatter/of-pattern "dd"))})))
-
-
-(defprotocol Versionable
-  (build-version [this] [this variables]))
-
-
-(extend-protocol Versionable
-  nil
-  (build-version
-    ([_] nil)
-    ([_ _] nil))
-
-  String
-  (build-version
-    ([s] (build-version s (variables)))
-    ([s variables] (selmer/render s variables)))
-
-  PersistentArrayMap
-  (build-version
-    ([m] (build-version m (variables)))
-    ([m variables] (some-> m :template (build-version variables))))
-
-  PersistentHashMap
-  (build-version
-    ([m] (build-version m (variables)))
-    ([m variables] (some-> m :template (build-version variables)))))
+   (read-project path (read-config)))
+  ([path config]
+   (some->> path
+            (io/file)
+            (read-edn)
+            (build-project config)
+            (with-project-defaults config))))
 
 
 
-;; TODO: Add helpers
-;; - to show previous versions
-;; - to calculate the next version
-
-(defn version
-  ([]
-   (version {}))
-  ([manifest]
-   (version manifest (variables manifest)))
-  ([manifest variables]
-   (build-version (:version manifest) variables)))
+(defn build-path
+  [{{:mvn/keys [group-id artifact-id]} :build}]
+  (let [path (if (= group-id artifact-id)
+               [(path/symbol->path artifact-id)]
+               (keep path/symbol->path [group-id artifact-id]))]
+    (->> ["target" "versioniq" "META-INF" path "build.edn"]
+         (flatten)
+         (str/join path/file-separator))))
 
 
-(defn metadata
-  ([manifest]
-   (metadata manifest (variables manifest)))
-  ([manifest {:as   variables
-              :keys [build-at build-number git-url git-branch git-sha]}]
-   (let [metadata {:version      (version manifest variables)
-                   :build-at     build-at
-                   :build-number build-number
-                   :git-url      git-url
-                   :git-branch   git-branch
-                   :git-sha      git-sha}]
-     (merge manifest metadata))))
+(defn write-build-file
+  [project]
+  (let [file (io/file (build-path project))]
+    (->> project
+         (print/pretty)
+         (with-out-str)
+         (file/ensure-file file))))
+
+
+(comment
+  (read-config)
+  (read-project)
+  (write-build-file (read-project))
+  )
