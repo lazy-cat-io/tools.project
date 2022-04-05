@@ -33,4 +33,3 @@
   (format
     ([dt] (str (.format dt fmt/iso-offset-datetime)))
     ([dt ^DateTimeFormatter fmt] (str (.format dt fmt)))))
-
