@@ -1,8 +1,127 @@
-== tools.project
+= tools.project
 
 A project management tool.
 
-**Status**: Prototyping
+**Status**: prototyping
+
+== Installation
+
+Add the following dependency in your project:
+
+.project.clj or build.boot
+[source,clojure]
+----
+[io.lazy-cat/tools.project "N/A"]
+----
+
+.deps.edn or bb.edn
+[source,clojure]
+----
+io.lazy-cat/tools.project {:mvn/version "N/A"}
+----
+
+== Getting started
+
+Add the project manifest to the project root directory.
+
+.example-project
+[source,bash]
+----
+.
+├── src
+├── bb.edn
+├── deps.edn
+└── project.edn
+----
+
+.project.edn
+[source,clojure]
+----
+{:name         io.lazy-cat/tools.project
+ :version      "0.0.{{ git/commits-count }}"
+ :description  "A project management tool."
+ :license      "MIT"
+ :author       "Ilshat Sultanov <ilshat@sultanov.team>"
+ :contributors [{:name  "Ilshat Sultanov"
+                 :email "ilshat@sultanov.team"
+                 :url   "https://github.com/just-sultanov"}]
+ :homepage     "https://github.com/lazy-cat-io/tools.project#readme"
+ :repository   {:url "https://github.com/lazy-cat-io/tools.project.git"}
+ :bugs         {:url "https://github.com/lazy-cat-io/tools.project/issues"}
+ :keywords     [:clojure :project-management :project-management-tool]}
+----
+
+=== Available variables
+
+[source,clojure]
+----
+(tools.project/read-config)
+=>
+{:variables {:build/created-at "2022-04-05T00:24:18.499584Z"
+             :datetime/day "05"
+             :datetime/hour "00"
+             :datetime/minute "24"
+             :datetime/month "04"
+             :datetime/second "49"
+             :datetime/year "2022"
+             :git/author-email "ilshat@sultanov.team"
+             :git/author-name "Ilshat Sultanov"
+             :git/author-timestamp "2022-04-05T03:19:07+03:00"
+             :git/branch "master"
+             :git/commit-body nil
+             :git/commit-message "Add configuration overrides"
+             :git/commit-subject "Add configuration overrides"
+             :git/commits-count "29"
+             :git/committer-email "ilshat@sultanov.team"
+             :git/committer-name "Ilshat Sultanov"
+             :git/committer-timestamp "2022-04-05T03:19:07+03:00"
+             :git/sha "ae2a96f"
+             :git/tags nil
+             :git/url "git@github.com:lazy-cat-io/tools.project.git"}}
+----
+
+=== Project info
+
+[source,clojure]
+----
+(tools.project/read-project)
+=>
+{:name io.lazy-cat/tools.project
+ :version "0.0.29"
+ :description "A project management tool."
+ :license "MIT"
+ :author "Ilshat Sultanov <ilshat@sultanov.team>"
+ :contributors [{:name "Ilshat Sultanov"
+                 :email "ilshat@sultanov.team"
+                 :url "https://github.com/just-sultanov"}]
+ :homepage "https://github.com/lazy-cat-io/tools.project#readme"
+ :repository {:url "https://github.com/lazy-cat-io/tools.project.git"}
+ :bugs {:url "https://github.com/lazy-cat-io/tools.project/issues"}
+ :keywords [:clojure :project-management :project-management-tool]
+ :build {:build/created-at "2022-04-05T00:26:25.547478Z"
+         :git/author-email "ilshat@sultanov.team"
+         :git/author-name "Ilshat Sultanov"
+         :git/author-timestamp "2022-04-05T03:19:07+03:00"
+         :git/branch "master"
+         :git/commit-message "Add configuration overrides"
+         :git/commits-count "29"
+         :git/committer-email "ilshat@sultanov.team"
+         :git/committer-name "Ilshat Sultanov"
+         :git/committer-timestamp "2022-04-05T03:19:07+03:00"
+         :git/sha "ae2a96f"
+         :git/tag "0.0.29"
+         :git/url "git@github.com:lazy-cat-io/tools.project.git"
+         :mvn/artifact-id tools.project
+         :mvn/group-id io.lazy-cat}}
+----
+
+== Using with clojure cli
+
+TBD
+
+== Using with babashka
+
+TBD
 
 === License
 
