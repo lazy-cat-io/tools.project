@@ -1,0 +1,19 @@
+{:variables
+ {:git/url                 "git config --get remote.origin.url"
+  :git/branch              "git rev-parse --abbrev-ref HEAD"
+  :git/sha                 "git rev-parse --short HEAD"
+
+  :git/commit-subject      "git log -1 --no-merges --pretty=format:%s"
+  :git/commit-body         "git log -1 --no-merges --pretty=format:%b"
+  :git/commit-message      "git log -1 --no-merges --pretty=format:%B"
+
+  :git/committer-timestamp "git log -1 --no-merges --pretty=format:%cI"
+  :git/committer-name      "git log -1 --no-merges --pretty=format:%cn"
+  :git/committer-email     "git log -1 --no-merges --pretty=format:%ce"
+
+  :git/author-timestamp    "git log -1 --no-merges --pretty=format:%aI"
+  :git/author-name         "git log -1 --no-merges --pretty=format:%an"
+  :git/author-email        "git log -1 --no-merges --pretty=format:%ae"
+
+  :git/commits-count       ["git rev-list HEAD --count" :default "0"]
+  :git/tags                "git tag --list --sort=-version:refname \"*\""}}
