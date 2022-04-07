@@ -1,1 +1,9 @@
-{:variables {}}
+{:variables
+ {}
+
+ :build
+ {:src-dirs      ["src/main/clojure"]
+  :resource-dirs ["src/main/resources"]
+  :target-dir    "target"
+  :coverage-dir  "coverage"
+  :jar-file      "target/tools.project.jar"}}
