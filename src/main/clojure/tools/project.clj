@@ -1,5 +1,6 @@
 (ns tools.project
   (:require
+    [aero.core :as aero]
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.string :as str]
@@ -15,6 +16,13 @@
       File)))
 
 
+(defmethod aero/reader 'sh
+  [_ _ x]
+  (try
+    (process/execute x)
+    (catch Exception _)))
+
+
 (defn root-directory
   []
   (path/user-dir))
@@ -23,7 +31,7 @@
 (defn read-edn
   [^File file]
   (when (and file (.exists file))
-    (-> file slurp edn/read-string)))
+    (aero/read-config file)))
 
 
 (defn read-default-config
@@ -53,27 +61,12 @@
             :second (datetime/format now (formatter/of-pattern "SS")))))
 
 
-(defn resolve-config-variables
-  [config]
-  (update config :variables
-          (fn [variables]
-            (reduce-kv
-              (fn [acc variable command]
-                (let [value (cond
-                              (string? command) (process/execute command)
-                              (vector? command) (let [[command & {:keys [default]}] command]
-                                                  (or (process/execute command) default)))]
-                  (assoc acc variable value)))
-              {} variables))))
-
-
 (defn read-config
   []
   (-> (merge-with
         merge
         (read-default-config)
         (read-user-config))
-      (resolve-config-variables)
       (with-config-defaults)))
 
 

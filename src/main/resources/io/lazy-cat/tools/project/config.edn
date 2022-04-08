@@ -1,22 +1,22 @@
 {:variables
- {:git/url                 "git config --get remote.origin.url"
-  :git/branch              "git rev-parse --abbrev-ref HEAD"
-  :git/sha                 "git rev-parse --short HEAD"
+ {:git/url                 #sh "git config --get remote.origin.url"
+  :git/branch              #sh "git rev-parse --abbrev-ref HEAD"
+  :git/sha                 #sh "git rev-parse --short HEAD"
 
-  :git/commit-subject      "git log -1 --no-merges --pretty=format:%s"
-  :git/commit-body         "git log -1 --no-merges --pretty=format:%b"
-  :git/commit-message      "git log -1 --no-merges --pretty=format:%B"
+  :git/commit-subject      #sh "git log -1 --no-merges --pretty=format:%s"
+  :git/commit-body         #sh "git log -1 --no-merges --pretty=format:%b"
+  :git/commit-message      #sh "git log -1 --no-merges --pretty=format:%B"
 
-  :git/committer-timestamp "git log -1 --no-merges --pretty=format:%cI"
-  :git/committer-name      "git log -1 --no-merges --pretty=format:%cn"
-  :git/committer-email     "git log -1 --no-merges --pretty=format:%ce"
+  :git/committer-timestamp #sh "git log -1 --no-merges --pretty=format:%cI"
+  :git/committer-name      #sh "git log -1 --no-merges --pretty=format:%cn"
+  :git/committer-email     #sh "git log -1 --no-merges --pretty=format:%ce"
 
-  :git/author-timestamp    "git log -1 --no-merges --pretty=format:%aI"
-  :git/author-name         "git log -1 --no-merges --pretty=format:%an"
-  :git/author-email        "git log -1 --no-merges --pretty=format:%ae"
+  :git/author-timestamp    #sh "git log -1 --no-merges --pretty=format:%aI"
+  :git/author-name         #sh "git log -1 --no-merges --pretty=format:%an"
+  :git/author-email        #sh "git log -1 --no-merges --pretty=format:%ae"
 
-  :git/commits-count       ["git rev-list HEAD --count" :default "0"]
-  :git/tags                "git tag --list --sort=-version:refname \"*\""}
+  :git/commits-count       #or [#sh "git rev-list HEAD --count" "0"]
+  :git/tags                #sh "git tag --list --sort=-version:refname \"*\""}
 
  :build
  {:src-dirs      ["src"]
