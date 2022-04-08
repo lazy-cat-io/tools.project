@@ -1,5 +1,5 @@
 {:min-bb-version
- "0.7.8"
+ "0.8.0"
 
  :deps
  {io.lazy-cat/tools.project {:local/root "."}}
