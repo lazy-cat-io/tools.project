@@ -17,6 +17,11 @@
   (system/get-property "user.dir"))
 
 
+(defn user-home
+  []
+  (system/get-property "user.home"))
+
+
 (defn symbol->path
   [sym]
   (some-> sym
