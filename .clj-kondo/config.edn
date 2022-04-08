@@ -2,7 +2,7 @@
                 ["src/main/clojure/data_readers.clj"
                  ".cljstyle"]}
 
- :config-paths []
+ :config-paths ["babashka/fs"]
 
  :lint-as      {}
 
