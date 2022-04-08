@@ -23,29 +23,51 @@
     (catch Exception _)))
 
 
-(defn root-directory
-  []
-  (path/user-dir))
-
-
 (defn read-edn
   [^File file]
   (when (and file (.exists file))
     (aero/read-config file)))
 
 
+(def project-filename
+  "project.edn")
+
+
+(def config-dirname
+  ".tools.project")
+
+
+(def config-filename
+  "config.edn")
+
+
+(def build-filename
+  "build.edn")
+
+
 (defn read-default-config
   []
-  (some->> (io/resource "io/lazy-cat/tools/project/config.edn")
-           (io/file)
-           (read-edn)))
+  (let [config-dir "io/lazy-cat/tools/project/config.edn"]
+    (some->> config-dir
+             (io/resource)
+             (io/file)
+             (read-edn))))
 
 
 (defn read-user-config
   []
-  (some->> (or (io/file (root-directory) ".tp" "config.edn")
-               (io/file (root-directory) ".tools.project" "config.edn"))
-           (read-edn)))
+  (let [config-dir (path/user-dir)]
+    (some->> config-filename
+             (io/file config-dir config-dirname)
+             (read-edn))))
+
+
+(defn read-user-home-config
+  []
+  (let [config-dir (path/user-home)]
+    (some->> config-filename
+             (io/file config-dir config-dirname)
+             (read-edn))))
 
 
 (defn with-config-defaults
@@ -66,6 +88,7 @@
   (-> (merge-with
         merge
         (read-default-config)
+        (read-user-home-config)
         (read-user-config))
       (with-config-defaults)))
 
@@ -96,7 +119,7 @@
 
 (defn read-project
   ([]
-   (read-project (io/file (root-directory) "project.edn") (read-config)))
+   (read-project (io/file (path/user-dir) project-filename) (read-config)))
   ([path]
    (read-project path (read-config)))
   ([path config]
@@ -113,7 +136,7 @@
         path          (if (= group-id artifact-id)
                         [(path/symbol->path artifact-id)]
                         (keep path/symbol->path [group-id artifact-id]))]
-    (->> [resource-dirs path "build.edn"]
+    (->> [resource-dirs path build-filename]
          (flatten)
          (str/join path/file-separator))))
 
