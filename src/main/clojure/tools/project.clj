@@ -3,7 +3,6 @@
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.string :as str]
-    [clojure.tools.build.util.file :as file]
     [clojure.walk :as walk]
     [selmer.parser :as selmer]
     [tools.datetime :as datetime]
@@ -29,7 +28,7 @@
 
 (defn read-default-config
   []
-  (some->> (io/resource "tools.project/config.edn")
+  (some->> (io/resource "io/lazy-cat/tools/project/config.edn")
            (io/file)
            (read-edn)))
 
@@ -46,15 +45,15 @@
   (let [now (datetime/zoned-date-time)]
     (update config :variables assoc
             :build/created-at (datetime/format now)
-            :datetime/year (datetime/format now (formatter/of-pattern "YYYY"))
-            :datetime/month (datetime/format now (formatter/of-pattern "MM"))
-            :datetime/day (datetime/format now (formatter/of-pattern "dd"))
-            :datetime/hour (datetime/format now (formatter/of-pattern "HH"))
-            :datetime/minute (datetime/format now (formatter/of-pattern "mm"))
-            :datetime/second (datetime/format now (formatter/of-pattern "SS")))))
+            :year (datetime/format now (formatter/of-pattern "YYYY"))
+            :month (datetime/format now (formatter/of-pattern "MM"))
+            :day (datetime/format now (formatter/of-pattern "dd"))
+            :hour (datetime/format now (formatter/of-pattern "HH"))
+            :minute (datetime/format now (formatter/of-pattern "mm"))
+            :second (datetime/format now (formatter/of-pattern "SS")))))
 
 
-(defn build-config
+(defn resolve-config-variables
   [config]
   (update config :variables
           (fn [variables]
@@ -74,23 +73,25 @@
         merge
         (read-default-config)
         (read-user-config))
-      (build-config)
+      (resolve-config-variables)
       (with-config-defaults)))
 
 
 (defn with-project-defaults
   [config project]
   (let [project-name (:name project)
-        git-tag      (:version project)
+        tag          (:version project)
         export-keys  (get-in config [:build :export-keys] [])
         build        (cond-> (:variables config)
                        (qualified-symbol? project-name) (assoc :mvn/group-id (-> project-name (namespace) (symbol)))
                        (symbol? project-name) (assoc :mvn/artifact-id (-> project-name (name) symbol))
-                       :always (-> (assoc :git/tag git-tag) (select-keys export-keys)))]
-    (assoc project :build build)))
+                       :always (-> (assoc :git/tag tag) (select-keys export-keys)))]
+    (-> project
+        (assoc :build build)
+        (with-meta {::config config}))))
 
 
-(defn build-project
+(defn resolve-project-variables
   [config project]
   (walk/postwalk
     (fn [form]
@@ -102,39 +103,55 @@
 
 (defn read-project
   ([]
-   (read-project (io/file (root-directory) "project.edn")))
+   (read-project (io/file (root-directory) "project.edn") (read-config)))
   ([path]
    (read-project path (read-config)))
   ([path config]
    (some->> path
             (io/file)
             (read-edn)
-            (build-project config)
+            (resolve-project-variables config)
             (with-project-defaults config))))
 
 
-
-(defn build-path
-  [{{:mvn/keys [group-id artifact-id]} :build}]
-  (let [path (if (= group-id artifact-id)
-               [(path/symbol->path artifact-id)]
-               (keep path/symbol->path [group-id artifact-id]))]
-    (->> ["target" "tools.project" "META-INF" path "build.edn"]
+(defn build-info-file-path
+  [{:as project {:mvn/keys [group-id artifact-id]} :build}]
+  (let [resource-dirs (some-> project (meta) ::config :build :resource-dirs)
+        path          (if (= group-id artifact-id)
+                        [(path/symbol->path artifact-id)]
+                        (keep path/symbol->path [group-id artifact-id]))]
+    (->> [resource-dirs path "build.edn"]
          (flatten)
          (str/join path/file-separator))))
 
 
-(defn write-build-file
+(defn write-build-info
   [project]
-  (let [file (io/file (build-path project))]
+  (let [file (io/file (build-info-file-path project))]
     (->> project
          (print/pretty)
          (with-out-str)
-         (file/ensure-file file))))
+         (path/ensure-file file))))
+
+
+(defn project->tools-build-opts
+  [project]
+  (let [lib     (:name project)
+        version (:version project)
+        url     (or (get-in project [:repository :url])
+                    (get-in project [:build :git/url]))
+        scm     {:url url, :tag version}]
+    (some-> project
+            (meta)
+            (::config)
+            (:build)
+            (dissoc :export-keys)
+            (assoc :lib lib :version version :scm scm))))
 
 
 (comment
   (read-config)
   (read-project)
-  (write-build-file (read-project))
+  (write-build-info (read-project))
+  (project->tools-build-opts (read-project))
   )
