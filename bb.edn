@@ -5,26 +5,71 @@
  {io.lazy-cat/tools.project {:local/root "."}}
 
  :tasks
- {:requires    ([tools.project :as p]
-                [tools.print :as pp])
+ {:requires        ([tools.project :as project]
+                    [tools.print :as print])
 
-  :init        (do
-                 (def project (p/read-project)))
+  :init            (do
+                     (def -project (project/read-project))
+                     (def -version (:version -project))
+                     (def -deployable? (= "master" (get-in -project [:build :git/branch]))))
 
-  :enter       (let [{:keys [doc print-doc?]
-                      :or   {print-doc? true}} (current-task)]
-                 (when (and print-doc? doc)
-                   (println (str "▸ " doc))))
+  :enter           (let [{:keys [doc print-doc?]
+                          :or   {print-doc? true}} (current-task)]
+                     (when (and print-doc? doc)
+                       (println (format "▸ [%s] %s" (:name -project) doc))))
 
   ;;;;
   ;; Tasks
   ;;;;
 
-  project:info {:task (pp/pretty project {:right-margin 200})}
+  version          {:doc        "Show version"
+                    :print-doc? false
+                    :task       (print -version)}
 
-  lint         {:doc  "Run linters"
-                :task (do
-                        (shell "cljstyle check src")
-                        (shell "clj-kondo --lint src"))}
-  lint:fix     {:doc  "Run linters & fix"
-                :task (shell "cljstyle fix src")}}}
+  project          {:doc        "Show project info"
+                    :print-doc? false
+                    :task       (print/pretty -project)}
+
+  build.edn        {:doc  "Generate build.edn"
+                    :task (project/write-build-info -project)}
+
+  outdated         {:doc  "Check for outdated dependencies"
+                    :task (clojure "-T:build outdated")}
+
+  outdated:upgrade {:doc  "Upgrade outdated dependencies"
+                    :task (clojure "-T:build outdated:upgrade")}
+
+  lint             {:doc  "Run linters"
+                    :task (do
+                            (shell "cljstyle check src")
+                            (shell "clj-kondo --lint src"))}
+
+  lint:fix         {:doc  "Run linters & fix"
+                    :task (shell "cljstyle fix src")}
+
+  clean            {:doc  "Cleanup"
+                    :task (clojure "-T:build clean")}
+
+  repl             {:doc     "Run REPL"
+                    :depends [clean build.edn]
+                    :task    (clojure "-T:build repl")}
+
+  test             {:doc     "Run tests"
+                    :depends [clean build.edn]
+                    :task    (clojure "-T:build test")}
+
+  jar              {:doc     "Make jar"
+                    :depends [clean build.edn]
+                    :task    (clojure "-T:build jar")}
+
+  uber             {:doc     "Make uberjar"
+                    :depends [clean build.edn]
+                    :task    (clojure "-T:build uber")}
+
+  install          {:doc  "Install the jar locally"
+                    :task (clojure "-T:build install")}
+
+  deploy           {:doc  "Deploy the jar to clojars"
+                    :task (if -deployable?
+                            (clojure "-T:build deploy")
+                            (println "Skip deploy..."))}}}
