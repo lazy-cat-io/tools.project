@@ -7,6 +7,6 @@
   ([x]
    (pretty x {}))
   ([x {:keys [right-margin]
-       :or   {right-margin 130}}]
+       :or   {right-margin 80}}]
    (binding [pprint/*print-right-margin* right-margin]
      (pprint/pprint x))))
