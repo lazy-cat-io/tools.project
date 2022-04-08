@@ -1,7 +1,6 @@
 (ns tools.project
   (:require
     [aero.core :as aero]
-    [clojure.edn :as edn]
     [clojure.java.io :as io]
     [clojure.string :as str]
     [clojure.walk :as walk]
