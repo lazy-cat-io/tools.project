@@ -16,7 +16,9 @@
   :git/author-email        #sh "git log -1 --no-merges --pretty=format:%ae"
 
   :git/commits-count       #or [#sh "git rev-list HEAD --count" "0"]
-  :git/tags                #sh "git tag --list --sort=-version:refname \"*\""}
+  :git/tags                #sh "git tag --list --sort=-version:refname \"*\""
+
+  :build/number            #or [#env BUILD_NUMBER "N/A"]}
 
  :build
  {:src-dirs      ["src"]
