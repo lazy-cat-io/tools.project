@@ -10,8 +10,23 @@
  :repository   {:url "https://github.com/lazy-cat-io/tools.project.git"}
  :bugs         {:url "https://github.com/lazy-cat-io/tools.project/issues"}
  :keywords     [:clojure :project-management :project-management-tool]
+
  :build        {:src-dirs      ["src/main/clojure"]
                 :resource-dirs ["src/main/resources"]
-                :target-dir    "target"
-                :coverage-dir  "coverage"
-                :jar-file      "target/tools.project.jar"}}
+                :target        "target"
+                :jar-file      "target/tools.project.jar"
+                :scm           {:url #ref [:repository :url]}}
+
+ :metadata     {:build/created-at        "{{ build/created-at }}"
+                :git/branch              "{{ git/branch }}"
+                :git/sha                 "{{ git/sha }}"
+
+                :git/commit-message      "{{ git/commit-message }}"
+
+                :git/author-email        "{{ git/author-email }}"
+                :git/author-name         "{{ git/author-name }}"
+                :git/author-timestamp    "{{ git/author-timestamp }}"
+
+                :git/committer-email     "{{ git/committer-email }}"
+                :git/committer-name      "{{ git/committer-name }}"
+                :git/committer-timestamp "{{ git/committer-timestamp }}"}}
