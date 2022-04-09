@@ -10,6 +10,10 @@
   DateTimeFormatter/ISO_OFFSET_DATE_TIME)
 
 
+(def formatters
+  {"iso-offset-datetime" iso-offset-datetime})
+
+
 (defn of-pattern
   ([^String pattern]
    (DateTimeFormatter/ofPattern pattern))
