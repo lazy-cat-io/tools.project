@@ -15,11 +15,36 @@
       File)))
 
 
-(defmethod aero/reader 'sh
+(defmacro safe
+  ([body] `(try ~body (catch Exception _#)))
+  ([body handler] `(try ~body (catch Exception e# (~handler e#)))))
+
+
+(defmethod aero/reader 'git
   [_ _ x]
-  (try
-    (process/execute x)
-    (catch Exception _)))
+  (safe
+    (process/execute (format "git %s" x))
+    #(println (format "WARNING: Can't execute %s" x))))
+
+
+(defmethod aero/reader 'zoned-date-time
+  [_ _ x]
+  (datetime/format
+    (datetime/zoned-date-time)
+    (or (get formatter/formatters x)
+        (formatter/of-pattern x))))
+
+
+(defmethod aero/reader 'case
+  [_ _ [expression {:as clauses :keys [default]}]]
+  (reduce
+    (fn [acc [k v]]
+      (or (and (= expression k) (reduced v))
+          (and (set? k) (contains? k expression) (reduced v))
+          (safe ; quote regex?
+           (and (string? k) (re-matches (re-pattern k) expression) (reduced v)))
+          acc))
+    default (dissoc clauses :default)))
 
 
 (defn read-edn
@@ -28,81 +53,54 @@
     (aero/read-config file)))
 
 
-(def project-filename
-  "project.edn")
-
-
-(def config-dirname
-  ".tools.project")
-
-
-(def config-filename
-  "config.edn")
-
-
-(def build-filename
-  "build.edn")
+(def project-filename "project.edn")
+(def config-dirname ".tools.project")
+(def config-filename "config.edn")
+(def build-filename "build.edn")
 
 
 (defn read-default-config
   []
-  (let [config-dir "io/lazy-cat/tools/project/config.edn"]
-    (some->> config-dir
-             (io/resource)
-             (io/file)
-             (read-edn))))
+  (some->> "io/lazy-cat/tools/project/config.edn"
+           (io/resource)
+           (io/file)
+           (read-edn)))
 
 
 (defn read-user-config
   []
-  (let [config-dir (path/user-dir)]
-    (some->> config-filename
-             (io/file config-dir config-dirname)
-             (read-edn))))
+  (some->> config-filename
+           (io/file (path/user-dir) config-dirname)
+           (read-edn)))
 
 
 (defn read-user-home-config
   []
-  (let [config-dir (path/user-home)]
-    (some->> config-filename
-             (io/file config-dir config-dirname)
-             (read-edn))))
-
-
-(defn with-config-defaults
-  [config]
-  (let [now (datetime/zoned-date-time)]
-    (update config :variables assoc
-            :build/created-at (datetime/format now)
-            :year (datetime/format now (formatter/of-pattern "YYYY"))
-            :month (datetime/format now (formatter/of-pattern "MM"))
-            :day (datetime/format now (formatter/of-pattern "dd"))
-            :hour (datetime/format now (formatter/of-pattern "HH"))
-            :minute (datetime/format now (formatter/of-pattern "mm"))
-            :second (datetime/format now (formatter/of-pattern "SS")))))
+  (some->> config-filename
+           (io/file (path/user-home) config-dirname)
+           (read-edn)))
 
 
 (defn read-config
   []
-  (-> (merge-with
-        merge
-        (read-default-config)
-        (read-user-home-config)
-        (read-user-config))
-      (with-config-defaults)))
+  (merge-with
+    merge
+    (read-default-config) ; remove this?
+    (read-user-home-config)
+    (read-user-config)))
 
 
 (defn with-project-defaults
   [config project]
   (let [project-name (:name project)
         tag          (:version project)
-        export-keys  (get-in config [:build :export-keys] [])
         build        (cond-> (:variables config)
                        (qualified-symbol? project-name) (assoc :mvn/group-id (-> project-name (namespace) (symbol)))
                        (symbol? project-name) (assoc :mvn/artifact-id (-> project-name (name) symbol))
-                       :always (-> (assoc :git/tag tag) (select-keys export-keys)))]
+                       :always (assoc :git/tag tag))]
     (-> project
-        (assoc :build build)
+        ;; FIXME: [2022-04-09, ilshat@sultanov.team] change path
+        (assoc ::variables build)
         (with-meta {::config config}))))
 
 
