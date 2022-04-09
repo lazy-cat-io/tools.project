@@ -134,12 +134,10 @@
 
 
 (defn project->tools-build-opts
-  [project]
-  (let [lib     (:name project)
-        version (:version project)]
-    (some-> project
-            (:build)
-            (assoc :lib lib :version version))))
+  [{:keys [name version build]}]
+  (cond-> build
+    (nil? (:lib build)) (assoc :lib name)
+    (nil? (:version build)) (assoc :version version)))
 
 
 (comment
