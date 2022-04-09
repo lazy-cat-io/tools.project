@@ -22,9 +22,7 @@
 
 (defmethod aero/reader 'git
   [_ _ x]
-  (safe
-    (process/execute (format "git %s" x))
-    #(println (format "WARNING: Can't execute %s" x))))
+  (process/execute (format "git %s" x)))
 
 
 (defmethod aero/reader 'zoned-date-time
@@ -90,20 +88,6 @@
     (read-user-config)))
 
 
-(defn with-project-defaults
-  [config project]
-  (let [project-name (:name project)
-        tag          (:version project)
-        build        (cond-> (:variables config)
-                       (qualified-symbol? project-name) (assoc :mvn/group-id (-> project-name (namespace) (symbol)))
-                       (symbol? project-name) (assoc :mvn/artifact-id (-> project-name (name) symbol))
-                       :always (assoc :git/tag tag))]
-    (-> project
-        ;; FIXME: [2022-04-09, ilshat@sultanov.team] change path
-        (assoc ::variables build)
-        (with-meta {::config config}))))
-
-
 (defn resolve-project-variables
   [config project]
   (walk/postwalk
@@ -123,17 +107,19 @@
    (some->> path
             (io/file)
             (read-edn)
-            (resolve-project-variables config)
-            (with-project-defaults config))))
+            (resolve-project-variables config))))
 
 
 (defn build-info-file-path
-  [{:as project {:mvn/keys [group-id artifact-id]} :build}]
-  (let [resource-dirs (some-> project (meta) ::config :build :resource-dirs)
-        path          (if (= group-id artifact-id)
+  [{:as project {:keys [lib resource-dirs]} :build}]
+  (let [lib           (or lib (:name project))
+        group-id      (some-> lib (namespace) (symbol))
+        artifact-id   (some-> lib (name) (symbol))
+        lib-path      (if (= group-id artifact-id)
                         [(path/symbol->path artifact-id)]
-                        (keep path/symbol->path [group-id artifact-id]))]
-    (->> [resource-dirs path build-filename]
+                        (keep path/symbol->path [group-id artifact-id]))
+        resource-dirs (first resource-dirs)]
+    (->> [resource-dirs lib-path build-filename]
          (flatten)
          (str/join path/file-separator))))
 
@@ -141,7 +127,7 @@
 (defn write-build-info
   [project]
   (let [file (io/file (build-info-file-path project))]
-    (->> project
+    (->> (dissoc project :build)
          (print/pretty)
          (with-out-str)
          (path/ensure-file file))))
@@ -150,21 +136,16 @@
 (defn project->tools-build-opts
   [project]
   (let [lib     (:name project)
-        version (:version project)
-        url     (or (get-in project [:repository :url])
-                    (get-in project [:build :git/url]))
-        scm     {:url url, :tag version}]
+        version (:version project)]
     (some-> project
-            (meta)
-            (::config)
             (:build)
-            (dissoc :export-keys)
-            (assoc :lib lib :version version :scm scm))))
+            (assoc :lib lib :version version))))
 
 
 (comment
   (read-config)
   (read-project)
+  (build-info-file-path (read-project))
   (write-build-info (read-project))
   (project->tools-build-opts (read-project))
   )
