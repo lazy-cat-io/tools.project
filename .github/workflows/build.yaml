@@ -133,3 +133,6 @@ jobs:
 
       - name: Run build jar
         run: bb jar
+
+      - name: Run deploy
+        run: bb deploy
