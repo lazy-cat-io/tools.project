@@ -1,1 +1,2 @@
-{:variables {}}
+{:variables
+ {:version/pre-release "-SNAPSHOT"}}
