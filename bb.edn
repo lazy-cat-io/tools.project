@@ -10,8 +10,7 @@
 
   :init            (do
                      (def -project (project/read-project))
-                     (def -version (:version -project))
-                     (def -deployable? (= "master" (get-in -project [:build :git/branch]))))
+                     (def -version (:version -project)))
 
   :enter           (let [{:keys [doc print-doc?]
                           :or   {print-doc? true}} (current-task)]
@@ -70,6 +69,4 @@
                     :task (clojure "-T:build install")}
 
   deploy           {:doc  "Deploy the jar to clojars"
-                    :task (if -deployable?
-                            (clojure "-T:build deploy")
-                            (println "Skip deploy..."))}}}
+                    :task (clojure "-T:build deploy")}}}
