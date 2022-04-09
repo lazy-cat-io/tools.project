@@ -1,44 +1,39 @@
 {:variables
- {:git/url                 #sh "git config --get remote.origin.url"
-  :git/branch              #sh "git rev-parse --abbrev-ref HEAD"
-  :git/sha                 #sh "git rev-parse --short HEAD"
+ {:git/url                 #git "config --get remote.origin.url"
+  :git/branch              #git "rev-parse --abbrev-ref HEAD"
+  :git/sha                 #git "rev-parse --short HEAD"
 
-  :git/commit-subject      #sh "git log -1 --no-merges --pretty=format:%s"
-  :git/commit-body         #sh "git log -1 --no-merges --pretty=format:%b"
-  :git/commit-message      #sh "git log -1 --no-merges --pretty=format:%B"
+  :git/commit-subject      #git "log -1 --no-merges --pretty=format:%s"
+  :git/commit-body         #git "log -1 --no-merges --pretty=format:%b"
+  :git/commit-message      #git "log -1 --no-merges --pretty=format:%B"
 
-  :git/committer-timestamp #sh "git log -1 --no-merges --pretty=format:%cI"
-  :git/committer-name      #sh "git log -1 --no-merges --pretty=format:%cn"
-  :git/committer-email     #sh "git log -1 --no-merges --pretty=format:%ce"
+  :git/committer-timestamp #git "log -1 --no-merges --pretty=format:%cI"
+  :git/committer-name      #git "log -1 --no-merges --pretty=format:%cn"
+  :git/committer-email     #git "log -1 --no-merges --pretty=format:%ce"
 
-  :git/author-timestamp    #sh "git log -1 --no-merges --pretty=format:%aI"
-  :git/author-name         #sh "git log -1 --no-merges --pretty=format:%an"
-  :git/author-email        #sh "git log -1 --no-merges --pretty=format:%ae"
+  :git/author-timestamp    #git "log -1 --no-merges --pretty=format:%aI"
+  :git/author-name         #git "log -1 --no-merges --pretty=format:%an"
+  :git/author-email        #git "log -1 --no-merges --pretty=format:%ae"
 
-  :git/commits-count       #or [#sh "git rev-list HEAD --count" "0"]
-  :git/tags                #sh "git tag --list --sort=-version:refname \"*\""
+  :git/commits-count       #or [#git "rev-list HEAD --count" "0"]
+  :git/tags                #git "tag --list --sort=-version:refname \"*\""
 
-  :build/number            #or [#env BUILD_NUMBER "N/A"]}
+  :build/number            #or [#env BUILD_NUMBER "N/A"]
+  :build/created-at        #zoned-date-time "iso-offset-datetime"
+
+  :datetime/year           #zoned-date-time "YYYY"
+  :datetime/month          #zoned-date-time "MM"
+  :datetime/day            #zoned-date-time "dd"
+  :datetime/hour           #zoned-date-time "HH"
+  :datetime/minute         #zoned-date-time "mm"
+  :datetime/second         #zoned-date-time "SS"
+
+  :version/pre-release     #case [#ref [:variables :git/branch]
+                                  {#{"master" "main"} ""
+                                   :default           "-SNAPSHOT"}]}
 
  :build
  {:src-dirs      ["src"]
   :resource-dirs ["resources"]
   :target-dir    "target"
-  :coverage-dir  "coverage"
-  :export-keys   [:build/created-at
-                  :build/number
-                  :git/author-email
-                  :git/author-name
-                  :git/author-timestamp
-                  :git/branch
-                  :git/commit-message
-                  :git/commits-count
-                  :git/committer-email
-                  :git/committer-name
-                  :git/committer-timestamp
-                  :git/sha
-                  :git/tag
-                  :git/tags
-                  :git/url
-                  :mvn/group-id
-                  :mvn/artifact-id]}}
+  :coverage-dir  "coverage"}}
