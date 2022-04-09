@@ -35,5 +35,7 @@
  :build
  {:src-dirs      ["src"]
   :resource-dirs ["resources"]
-  :target-dir    "target"
-  :coverage-dir  "coverage"}}
+  :target        "target"}
+
+ :export
+ {:format :edn}}
