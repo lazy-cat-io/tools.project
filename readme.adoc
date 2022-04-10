@@ -1,28 +1,25 @@
-= tools.project
+image:https://img.shields.io/github/license/lazy-cat-io/tools.project[license,link=license]
+image:https://img.shields.io/github/v/release/lazy-cat-io/tools.project.svg)[https://github.com/lazy-cat-io/tools.project/releases]
+image:https://github.com/lazy-cat-io/tools.project/actions/workflows/build.yaml/badge.svg[https://github.com/lazy-cat-io/tools.project/actions/workflows/build.yml]
+
+image:https://img.shields.io/clojars/v/io.lazy-cat/tools.project.svg[clojars,link=https://clojars.org/io.lazy-cat/tools.project]
+
+== tools.project
 
 A project management tool.
 
 **Status**: alpha
 
-== Features
+=== Features
 
 - Unify a project manifest
 - Collect dynamic metadata of builds at compile time (e.g. uberjar step) and use the metadata at runtime
 - Transform a project manifest to https://github.com/seancorfield/build-clj[io.github.seancorfield/build-clj] format
 - Manage project version
 
-== Roadmap
+=== Getting started
 
-- [ ] Stabilize the API
-- [ ] Add validation using `malli` schemas
-- [ ] Use `rewrite-edn` to preserve the manifest formatting style
-- [ ] Add versioning support for `semver`, `git flow`
-- [ ] Add usage examples with the babashka and Clojure CLI as tool `(-T)`
-- [ ] Add support for `mono repositories`
-
-== Getting started
-
-=== Installation
+==== Installation
 
 Add the following dependency in your project:
 
@@ -38,7 +35,7 @@ Add the following dependency in your project:
 io.lazy-cat/tools.project {:mvn/version "N/A"}
 ----
 
-=== Configuration
+==== Configuration
 
 Add the project manifest to the project root directory.
 
@@ -233,6 +230,15 @@ How to add `BUILD_NUMBER` on GitHub Actions:
     echo 'BUILD_NUMBER=${{ github.run_number }}' >> $GITHUB_ENV;
 ----
 
-== License
+=== Roadmap
+
+- [ ] Stabilize the API
+- [ ] Add validation using `malli` schemas
+- [ ] Use `rewrite-edn` to preserve the manifest formatting style
+- [ ] Add versioning support for `semver`, `git flow`
+- [ ] Add usage examples with the babashka and Clojure CLI as tool `(-T)`
+- [ ] Add support for `mono repositories`
+
+=== License
 
 link:license[Copyright © 2022 lazy-cat.io]
