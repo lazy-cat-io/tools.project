@@ -7,7 +7,7 @@
                  :email "ilshat@sultanov.team"
                  :url   "https://github.com/just-sultanov"}]
  :homepage     "https://github.com/lazy-cat-io/tools.project#readme"
- :repository   {:url "https://github.com/lazy-cat-io/tools.project.git"}
+ :repository   {:url "https://github.com/lazy-cat-io/tools.project"}
  :bugs         {:url "https://github.com/lazy-cat-io/tools.project/issues"}
  :keywords     [:clojure :project-management :project-management-tool]
 
