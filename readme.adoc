@@ -1,5 +1,4 @@
 = tools.project
-:toc:
 
 A project management tool.
 
@@ -8,7 +7,7 @@ A project management tool.
 == Features
 
 - Unify a project manifest
-- Collect dynamic metadata of builds in compile time (e.g. uberjar step) and use the metadata at runtime
+- Collect dynamic metadata of builds at compile time (e.g. uberjar step) and use the metadata at runtime
 - Transform a project manifest to https://github.com/seancorfield/build-clj[io.github.seancorfield/build-clj] format
 - Manage project version
 
