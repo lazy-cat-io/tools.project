@@ -1,10 +1,29 @@
 = tools.project
+:toc:
 
 A project management tool.
 
-**Status**: prototyping
+**Status**: alpha
 
-== Installation
+== Features
+
+- Unify a project manifest
+- Collect dynamic metadata of builds in compile time (e.g. uberjar step) and use the metadata at runtime
+- Transform a project manifest to https://github.com/seancorfield/build-clj[io.github.seancorfield/build-clj] format
+- Manage project version
+
+== Roadmap
+
+- [ ] Stabilize the API
+- [ ] Add validation using `malli` schemas
+- [ ] Use `rewrite-edn` to preserve the manifest formatting style
+- [ ] Add versioning support for `semver`, `git flow`
+- [ ] Add usage examples with the babashka and Clojure CLI as tool `(-T)`
+- [ ] Add support for `mono repositories`
+
+== Getting started
+
+=== Installation
 
 Add the following dependency in your project:
 
@@ -20,7 +39,7 @@ Add the following dependency in your project:
 io.lazy-cat/tools.project {:mvn/version "N/A"}
 ----
 
-== Getting started
+=== Configuration
 
 Add the project manifest to the project root directory.
 
@@ -28,17 +47,20 @@ Add the project manifest to the project root directory.
 [source,bash]
 ----
 .
+├── .tools.project
+│   └── config.edn <- project level configuration (variables, etc)
 ├── src
-├── bb.edn
 ├── deps.edn
-└── project.edn
+└── project.edn <- project manifest (any data)
 ----
 
 .project.edn
 [source,clojure]
 ----
+;; juxt/aero and selmer libraries are supported
+
 {:name         io.lazy-cat/tools.project
- :version      "0.0.{{ git/commits-count }}"
+ :version      "0.0.{{ git/commits-count }}{{ version/pre-release }}"
  :description  "A project management tool."
  :license      "MIT"
  :author       "Ilshat Sultanov <ilshat@sultanov.team>"
@@ -48,81 +70,170 @@ Add the project manifest to the project root directory.
  :homepage     "https://github.com/lazy-cat-io/tools.project#readme"
  :repository   {:url "https://github.com/lazy-cat-io/tools.project.git"}
  :bugs         {:url "https://github.com/lazy-cat-io/tools.project/issues"}
- :keywords     [:clojure :project-management :project-management-tool]}
+ :keywords     [:clojure :project-management :project-management-tool]
+
+ :build        {:src-dirs      ["src/main/clojure"]
+                :resource-dirs ["src/main/resources"]
+                :target        "target"
+                :jar-file      "target/tools.project.jar"
+                :scm           {:url #ref [:repository :url]}}
+
+ :metadata     {:build/created-at        "{{ build/created-at }}"
+                :git/branch              "{{ git/branch }}"
+                :git/sha                 "{{ git/sha }}"
+
+                :git/commit-message      "{{ git/commit-message }}"
+
+                :git/author-email        "{{ git/author-email }}"
+                :git/author-name         "{{ git/author-name }}"
+                :git/author-timestamp    "{{ git/author-timestamp }}"
+
+                :git/committer-email     "{{ git/committer-email }}"
+                :git/committer-name      "{{ git/committer-name }}"
+                :git/committer-timestamp "{{ git/committer-timestamp }}"}}
+
 ----
 
-=== Available variables
-
-[source,clojure]
-----
-(tools.project/read-config)
-=>
-{:variables {:build/created-at "2022-04-05T00:24:18.499584Z"
-             :datetime/day "05"
-             :datetime/hour "00"
-             :datetime/minute "24"
-             :datetime/month "04"
-             :datetime/second "49"
-             :datetime/year "2022"
-             :git/author-email "ilshat@sultanov.team"
-             :git/author-name "Ilshat Sultanov"
-             :git/author-timestamp "2022-04-05T03:19:07+03:00"
-             :git/branch "master"
-             :git/commit-body nil
-             :git/commit-message "Add configuration overrides"
-             :git/commit-subject "Add configuration overrides"
-             :git/commits-count "29"
-             :git/committer-email "ilshat@sultanov.team"
-             :git/committer-name "Ilshat Sultanov"
-             :git/committer-timestamp "2022-04-05T03:19:07+03:00"
-             :git/sha "ae2a96f"
-             :git/tags nil
-             :git/url "git@github.com:lazy-cat-io/tools.project.git"}}
-----
-
-=== Project info
+==== API
 
 [source,clojure]
 ----
-(tools.project/read-project)
+(ns example
+  (:require
+    [tools.project :as tp]))
+
+;;;;
+;; Configuration
+;;;;
+
+;; Stages of configuration building:
+;; - reading the local configuration of the project (./.tools.project/config.edn)
+;; - reading the global configuration from the user's home directory (~/.tools.project/config.edn)
+;; - reading the default configuration (src/main/resources/io/lazy-cat/tools/project/config.edn)
+
+;; example output
+(tp/read-config)
 =>
-{:name io.lazy-cat/tools.project
- :version "0.0.29"
- :description "A project management tool."
- :license "MIT"
- :author "Ilshat Sultanov <ilshat@sultanov.team>"
- :contributors [{:name "Ilshat Sultanov"
+{
+ ;; variables that can be used in project.edn in templates (uses Selmer under the hood)
+ :variables {:build/created-at        "2022-04-09T22:44:47.299245Z"
+             :build/number            "42"
+             :datetime/day            "09"
+             :datetime/hour           "22"
+             :datetime/minute         "47"
+             :datetime/month          "04"
+             :datetime/second         "77"
+             :datetime/year           "2022"
+             :git/author-email        "ilshat@sultanov.team"
+             :git/author-name         "Ilshat Sultanov"
+             :git/author-timestamp    "2022-04-10T01:37:02+03:00"
+             :git/branch              "master"
+             :git/commit-body         nil
+             :git/commit-message      "Add deploy step"
+             :git/commit-subject      "Add deploy step"
+             :git/commits-count       "64"
+             :git/committer-email     "ilshat@sultanov.team"
+             :git/committer-name      "Ilshat Sultanov"
+             :git/committer-timestamp "2022-04-10T01:37:02+03:00"
+             :git/sha                 "61770ee"
+             :git/tags                nil
+             :git/url                 "git@github.com:lazy-cat-io/tools.project.git"
+             :version/pre-release     ""}
+
+ ;; build-clj configuration (:lib and :version parameters will be added automatically)
+ :build     {:src-dirs      ["src"]
+             :resource-dirs ["resources"]
+             :target        "target"}}
+
+;;;;
+;; Project manifest
+;;;;
+
+(tp/read-project)
+=>
+{:name         io.lazy-cat/tools.project
+ :version      "0.0.64"
+ :description  "A project management tool."
+ :license      "MIT"
+ :author       "Ilshat Sultanov <ilshat@sultanov.team>"
+ :contributors [{:name  "Ilshat Sultanov"
                  :email "ilshat@sultanov.team"
-                 :url "https://github.com/just-sultanov"}]
- :homepage "https://github.com/lazy-cat-io/tools.project#readme"
- :repository {:url "https://github.com/lazy-cat-io/tools.project.git"}
- :bugs {:url "https://github.com/lazy-cat-io/tools.project/issues"}
- :keywords [:clojure :project-management :project-management-tool]
- :build {:build/created-at "2022-04-05T00:26:25.547478Z"
-         :git/author-email "ilshat@sultanov.team"
-         :git/author-name "Ilshat Sultanov"
-         :git/author-timestamp "2022-04-05T03:19:07+03:00"
-         :git/branch "master"
-         :git/commit-message "Add configuration overrides"
-         :git/commits-count "29"
-         :git/committer-email "ilshat@sultanov.team"
-         :git/committer-name "Ilshat Sultanov"
-         :git/committer-timestamp "2022-04-05T03:19:07+03:00"
-         :git/sha "ae2a96f"
-         :git/tag "0.0.29"
-         :git/url "git@github.com:lazy-cat-io/tools.project.git"
-         :mvn/artifact-id tools.project
-         :mvn/group-id io.lazy-cat}}
+                 :url   "https://github.com/just-sultanov"}]
+ :homepage     "https://github.com/lazy-cat-io/tools.project#readme"
+ :repository   {:url "https://github.com/lazy-cat-io/tools.project.git"}
+ :bugs         {:url "https://github.com/lazy-cat-io/tools.project/issues"}
+ :keywords     [:clojure :project-management :project-management-tool]
+
+ :build        {:src-dirs      ["src/main/clojure"]
+                :resource-dirs ["src/main/resources"]
+                :target        "target"
+                :jar-file      "target/tools.project.jar"
+                :scm           {:url "https://github.com/lazy-cat-io/tools.project.git"}}
+
+ :metadata     {:build/created-at        "2022-04-09T22:44:47.299245Z"
+                :git/author-email        "ilshat@sultanov.team"
+                :git/author-name         "Ilshat Sultanov"
+                :git/author-timestamp    "2022-04-10T01:37:02+03:00"
+                :git/branch              "master"
+                :git/commit-message      "Add deploy step"
+                :git/committer-email     "ilshat@sultanov.team"
+                :git/committer-name      "Ilshat Sultanov"
+                :git/committer-timestamp "2022-04-10T01:37:02+03:00"
+                :git/sha                 "61770ee"}}
+
+
+;;;;
+;; Project metadata
+;;;;
+
+;; Export a build metadata to resources directory using a project name (without build-clj configuration - :build key)
+(tp/write-build-info (tp/read-project))
+;; =>
+;; Output: src/main/resources/io/lazy-cat/tools/project/build.edn
 ----
 
-== Using with clojure cli
+==== Customization
 
-TBD
+link:src/main/resources/io/lazy-cat/tools/project/config.edn[See default variables]
 
-== Using with babashka
+[source,clojure]
+----
+;; .tools.project/config.edn
+{:variables
+  {:git/long-sha #git "rev-parse HEAD"}}
 
-TBD
+;; project.edn
+{:version "v0.0.{{ git/long-sha }}"}
 
-=== License
+(tp/read-project)
+=>
+{...
+ :version "v0.0.61770ee7e611ce57840fdf45cb71e085d32134d5"
+ ...}
+----
 
-Copyright © 2022 lazy-cat.io
+===== CI/CD
+
+If you need to use the variable `build/number` you should expose the environment variable `BUILD_NUMBER` or you can override `build/number` calculation.
+[source,clojure]
+
+----
+;; default configuration
+{:variables
+  {:build/number #or [#env BUILD_NUMBER "N/A"]}}
+----
+
+====== GitHub Actions
+
+How to add `BUILD_NUMBER` on GitHub Actions:
+
+[source,yaml]
+----
+- name: Setup environment variables
+  run: >-
+    echo 'BUILD_NUMBER=${{ github.run_number }}' >> $GITHUB_ENV;
+----
+
+== License
+
+link:license[Copyright © 2022 lazy-cat.io]
