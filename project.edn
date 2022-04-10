@@ -19,14 +19,4 @@
 
  :metadata     {:build/created-at        "{{ build/created-at }}"
                 :git/branch              "{{ git/branch }}"
-                :git/sha                 "{{ git/sha }}"
-
-                :git/commit-message      "{{ git/commit-message }}"
-
-                :git/author-email        "{{ git/author-email }}"
-                :git/author-name         "{{ git/author-name }}"
-                :git/author-timestamp    "{{ git/author-timestamp }}"
-
-                :git/committer-email     "{{ git/committer-email }}"
-                :git/committer-name      "{{ git/committer-name }}"
-                :git/committer-timestamp "{{ git/committer-timestamp }}"}}
+                :git/sha                 "{{ git/sha }}"}}
