@@ -1,6 +1,7 @@
 image:https://img.shields.io/github/license/lazy-cat-io/tools.project[license,link=license]
-image:https://img.shields.io/github/v/release/lazy-cat-io/tools.project.svg)[https://github.com/lazy-cat-io/tools.project/releases]
-image:https://github.com/lazy-cat-io/tools.project/actions/workflows/build.yaml/badge.svg[https://github.com/lazy-cat-io/tools.project/actions/workflows/build.yaml]
+image:https://img.shields.io/github/v/release/lazy-cat-io/tools.project.svg[https://github.com/lazy-cat-io/tools.project/releases]
+image:https://github.com/lazy-cat-io/tools.project/actions/workflows/build.yml/badge.svg[https://github.com/lazy-cat-io/tools.project/actions/workflows/build.yml]
+image:https://github.com/lazy-cat-io/tools.project/actions/workflows/deploy.yml/badge.svg[https://github.com/lazy-cat-io/tools.project/actions/workflows/deploy.yml]
 
 image:https://img.shields.io/clojars/v/io.lazy-cat/tools.project.svg[clojars,link=https://clojars.org/io.lazy-cat/tools.project]
 
