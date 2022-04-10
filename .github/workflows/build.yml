@@ -92,7 +92,7 @@ jobs:
         run: bb test
 
 
-  deploy:
+  build:
     runs-on: ubuntu-latest
     needs: test
     steps:
@@ -133,6 +133,3 @@ jobs:
 
       - name: Run build jar
         run: bb jar
-
-      - name: Run deploy
-        run: bb deploy
