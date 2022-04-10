@@ -126,11 +126,12 @@
 
 (defn write-build-info
   [project]
-  (let [file (io/file (build-info-file-path project))]
+  (let [file (build-info-file-path project)]
     (->> (dissoc project :build)
          (print/pretty)
          (with-out-str)
-         (path/ensure-file file))))
+         (path/ensure-file file))
+    (println (format "Output: %s" file))))
 
 
 (defn project->tools-build-opts
@@ -141,6 +142,9 @@
 
 
 (comment
+  (read-user-home-config)
+  (read-user-config)
+  (read-default-config)
   (read-config)
   (read-project)
   (build-info-file-path (read-project))
