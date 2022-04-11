@@ -22,16 +22,15 @@ jobs:
           fetch-depth: 0
 
       - name: Setup clojure
-        uses: DeLaGuardo/setup-clojure@5.0
+        uses: DeLaGuardo/setup-clojure@5.1
         with:
           cli: latest
           bb: latest
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup clj-kondo
         uses: DeLaGuardo/setup-clj-kondo@master
         with:
-          version: '2022.03.09'
+          version: '2022.04.08'
 
       - name: Setup cljstyle
         uses: just-sultanov/setup-cljstyle@v1
@@ -67,14 +66,13 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '18'
+          java-version: '17'
 
       - name: Setup clojure
-        uses: DeLaGuardo/setup-clojure@5.0
+        uses: DeLaGuardo/setup-clojure@5.1
         with:
           cli: latest
           bb: latest
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache deps
         uses: actions/cache@v3
@@ -110,14 +108,13 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '18'
+          java-version: '17'
 
       - name: Setup clojure
-        uses: DeLaGuardo/setup-clojure@5.0
+        uses: DeLaGuardo/setup-clojure@5.1
         with:
           cli: latest
           bb: latest
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Cache deps
         uses: actions/cache@v3
