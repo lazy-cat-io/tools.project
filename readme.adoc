@@ -27,13 +27,13 @@ Add the following dependency in your project:
 .project.clj or build.boot
 [source,clojure]
 ----
-[io.lazy-cat/tools.project "0.1.71"]
+[io.lazy-cat/tools.project "0.1.82"]
 ----
 
 .deps.edn or bb.edn
 [source,clojure]
 ----
-io.lazy-cat/tools.project {:mvn/version "0.1.71"}
+io.lazy-cat/tools.project {:mvn/version "0.1.82"}
 ----
 
 ==== Configuration

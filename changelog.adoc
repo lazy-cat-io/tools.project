@@ -2,6 +2,14 @@
 
 === Released
 
+==== v0.1.82 (2022-04-12)
+
+===== Fixed
+
+- Fix reading the default configuration
+
+'''
+
 ==== v0.1.71 (2022-04-10)
 
 The first official release
