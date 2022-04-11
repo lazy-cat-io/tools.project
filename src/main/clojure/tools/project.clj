@@ -12,7 +12,9 @@
     [tools.process :as process])
   (:import
     (java.io
-      File)))
+      File)
+    (java.net
+      URL)))
 
 
 (defmacro safe
@@ -45,10 +47,19 @@
     default (dissoc clauses :default)))
 
 
-(defn read-edn
-  [^File file]
-  (when (and file (.exists file))
-    (aero/read-config file)))
+(defprotocol IReader
+  (read-edn [this]))
+
+
+(extend-protocol IReader
+  File
+  (read-edn [^File file]
+    (when (.exists file)
+      (aero/read-config file)))
+
+  URL
+  (read-edn [^URL url]
+    (aero/read-config url)))
 
 
 (def project-filename "project.edn")
@@ -61,7 +72,6 @@
   []
   (some->> "io/lazy-cat/tools/project/config.edn"
            (io/resource)
-           (io/file)
            (read-edn)))
 
 
