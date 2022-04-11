@@ -61,10 +61,6 @@
                     :depends [clean build.edn]
                     :task    (clojure "-T:build jar")}
 
-  uber             {:doc     "Make uberjar"
-                    :depends [clean build.edn]
-                    :task    (clojure "-T:build uber")}
-
   install          {:doc  "Install the jar locally"
                     :task (clojure "-T:build install")}
 
